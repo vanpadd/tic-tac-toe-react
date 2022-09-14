@@ -5,7 +5,9 @@ function App() {
   return (
     <div style={{ textAlign: 'center' }}>
       <header>
-        <h1>Tic Tac Toe in React</h1>
+        <h1 style={{ fontSize: 24, fontFamily: 'monospace' }}>
+          Nyra Tic Tac Toe
+        </h1>
       </header>
       <Game />
     </div>
@@ -43,7 +45,6 @@ const checkForWin = (flatGrid) => {
 };
 
 const checkForDraw = (flatGrid) => {
-  console.log('flatGrid.filter((x) => x === null).length');
   return (
     !checkForWin(flatGrid) &&
     flatGrid.filter(Boolean).length === flatGrid.length
@@ -57,8 +58,8 @@ const NEXT_TURN = {
 
 const getInitialState = () => ({
   grid: ticTacToeGrid(),
-  status: 'inProgress',
-  turn: 'X',
+  status: 'begin',
+  turn: '-',
 });
 
 const reducer = (state, action) => {
@@ -87,6 +88,13 @@ const reducer = (state, action) => {
 
       nextState.turn = NEXT_TURN[turn];
       return nextState;
+
+    case 'SELECTION':
+      return {
+        grid: ticTacToeGrid(),
+        status: 'inProgress',
+        turn: action.payload,
+      };
     case 'RESET':
       return getInitialState();
     default:
@@ -99,35 +107,104 @@ function Game() {
   const { grid, turn, status } = state;
 
   const handleClick = (x, y) => {
-    dispatch({ type: 'CLICK', payload: { x, y } });
+    if (status === 'inProgress') {
+      dispatch({ type: 'CLICK', payload: { x, y } });
+    }
   };
 
   const reset = () => {
     dispatch({ type: 'RESET' });
   };
 
+  const handleOnSelection = (selection) => {
+    dispatch({ type: 'SELECTION', payload: selection });
+  };
+
   return (
-    <div style={{ display: 'inline-block' }}>
+    <div style={{ display: 'inline-block', paddingTop: 50 }}>
       <div
         style={{
           display: 'flex',
-          justifyContent: 'space-between',
+          flexDirection: 'column',
           marginBottom: 10,
         }}
       >
-        {status === 'inProgress' && <div>Who's turn is it? {turn}</div>}
-        <div>
+        {status === 'begin' && (
+          <div>
+            <div
+              style={{
+                marginBottom: 10,
+                fontSize: 24,
+                fontFamily: 'monospace',
+              }}
+            >
+              Who's starting out?
+            </div>
+            <div style={{ fontSize: 24, fontFamily: 'monospace' }}>
+              <button
+                style={{
+                  height: 50,
+                  width: 50,
+                  backgroundColor: '#0ABAB5',
+                  borderRadius: 5,
+                  border: 0,
+                  fontSize: 24,
+                  fontFamily: 'monospace',
+                }}
+                onClick={() => handleOnSelection('X')}
+              >
+                X
+              </button>{' '}
+              or{' '}
+              <button
+                style={{
+                  height: 50,
+                  width: 50,
+                  backgroundColor: '#0ABAB5',
+                  borderRadius: 5,
+                  border: 0,
+                  fontSize: 24,
+                  fontFamily: 'monospace',
+                }}
+                onClick={() => handleOnSelection('O')}
+              >
+                O
+              </button>
+            </div>
+          </div>
+        )}
+        {status === 'inProgress' && (
+          <div
+            style={{ fontSize: 24, marginBottom: 50, fontFamily: 'monospace' }}
+          >
+            Who's turn is it? {turn}
+          </div>
+        )}
+        <div
+          style={{ fontSize: 21, fontWeight: 'bold', fontFamily: 'monospace' }}
+        >
           {status === 'success'
-            ? `${turn} won!`
+            ? `Three in a row - ${turn} won!`
             : status === 'draw'
             ? `It's a draw!`
             : null}
         </div>
-        <button type="button" onClick={reset}>
-          Reset
+        <Grid grid={grid} handleClick={handleClick}></Grid>
+        <button
+          type="button"
+          style={{
+            height: 50,
+            backgroundColor: '#0ABAB5',
+            borderRadius: 5,
+            border: 0,
+            fontSize: 24,
+            fontFamily: 'monospace',
+          }}
+          onClick={reset}
+        >
+          Play again!
         </button>
       </div>
-      <Grid grid={grid} handleClick={handleClick}></Grid>
     </div>
   );
 }
@@ -137,6 +214,8 @@ function Grid({ grid, handleClick }) {
     <div
       style={{
         display: 'inline-block',
+        marginTop: 50,
+        marginBottom: 50,
       }}
     >
       <div
